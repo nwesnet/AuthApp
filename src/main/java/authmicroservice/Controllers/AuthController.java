@@ -1,10 +1,8 @@
-package authmicroservice.Configs;
+package authmicroservice.Controllers;
 
 
-import authmicroservice.Utils.JwtUtil;
 import authmicroservice.Entities.User;
 import authmicroservice.Repositories.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 public class AuthController {
@@ -51,18 +50,25 @@ public class AuthController {
     public String login(
             @RequestParam String username,
             @RequestParam String password,
+            @RequestParam(required = false) String redirect_uri,
             HttpServletResponse response,
             Model model
     ) {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
-            String token = JwtUtil.generateToken(username);
-            Cookie cookie = new Cookie("JWT_TOKEN", token);
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
+            String code = UUID.randomUUID().toString();
 
-            return "redirect:http://localhost:1337/";
+            CodeStore.saveCode(code, username);
+
+            String redirect = (redirect_uri != null && !redirect_uri.isBlank()) ?
+                    redirect_uri : "http://localhost:1337/oauth/callback";
+//            String token = JwtUtil.generateToken(username);
+//            Cookie cookie = new Cookie("JWT_TOKEN", token);
+//            cookie.setPath("/");
+//            cookie.setHttpOnly(true);
+//            response.addCookie(cookie);
+//            return "redirect:http://localhost:1337/";
+            return "redirect:" + redirect + "?code=" + code;
         } else {
             model.addAttribute("error", "Invalid username or password");
             return "index";
