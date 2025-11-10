@@ -62,6 +62,7 @@ public class AuthController {
 
             String redirect = (redirect_uri != null && !redirect_uri.isBlank()) ?
                     redirect_uri : "http://localhost:1337/oauth/callback";
+            // The first way to implement the cross application authorization
 //            String token = JwtUtil.generateToken(username);
 //            Cookie cookie = new Cookie("JWT_TOKEN", token);
 //            cookie.setPath("/");
