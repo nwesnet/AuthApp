@@ -5,6 +5,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
 import java.util.Date;
 
 public class JwtUtil {
@@ -16,11 +17,14 @@ public class JwtUtil {
     }
 
     public static String generateToken(String username) {
+        Instant now = Instant.now();
+        Instant expiry = now.plusSeconds(3600);
+
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*60*24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .subject(username)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiry))
+                .signWith(getSigningKey())
                 .compact();
     }
 }
